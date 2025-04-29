@@ -58,25 +58,24 @@ def compute_integral(a, b, f, dx, method):
     method == 'trapezoidal' - методом трапеций   
     method == 'simpson' - методом Симпсона  
     """
-    # Генерируем точки на отрезке [a, b] с шагом dx
-    x = np.arange(a, b, dx)
+    n_intervals = int((b - a) / dx)
+    x = np.linspace(a, b, n_intervals + 1)
     
     if method == 'rectangular':
-        # Метод прямоугольников: используем левую границу
-        return np.sum(f(x) * dx)
-    
+        x_mid = x[:-1]  # Левая точка прямоугольника
+        return np.sum(f(x_mid)) * dx
+
     elif method == 'trapezoidal':
-        # Метод трапеций
-        return np.sum((f(x[:-1]) + f(x[1:])) * dx / 2)
-    
+        y = f(x)
+        return (y[0] + 2 * np.sum(y[1:-1]) + y[-1]) * dx / 2
+
     elif method == 'simpson':
-        n = len(x) - 1
-        if n % 2 == 1:  # Метод Симпсона требует чётное число интервалов
-            x = x[:-1]  # Убираем последнюю точку
-            n -= 1
+        if n_intervals % 2 == 1:  # нужно чётное число отрезков → нечётное число точек
+            x = np.linspace(a, b, n_intervals + 2)
+            dx = (b - a) / (n_intervals + 1)
         
-        return (dx / 3) * (f(x[0]) + 
-                           4 * np.sum(f(x[1:n:2])) + 
-                           2 * np.sum(f(x[2:n-1:2])) + 
-                           f(x[n]))
-    
+        y = f(x)
+        return dx / 3 * (y[0] + 4 * np.sum(y[1:-1:2]) + 2 * np.sum(y[2:-2:2]) + y[-1])
+
+    else:
+        raise ValueError("Unknown method. Use 'rectangular', 'trapezoidal' or 'simpson'.")
